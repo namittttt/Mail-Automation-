@@ -19,9 +19,6 @@ apt update
 echo
 echo "[2/5] Installing Required Packages..."
 
-<<<<<<< HEAD
-DEBIAN_FRONTEND=noninteractive apt install -y postfix postfix-ldap dovecot-core dovecot-imapd dovecot-pop3d dovecot-lmtpd dovecot-ldap slapd ldap-utils roundcube roundcube-core apache2 php php-cli php-common php-ldap php-mbstring php-intl php-mysql pwgen mailutils telnet
-=======
 DEBIAN_FRONTEND=noninteractive apt install -y \
 postfix \
 postfix-ldap \
@@ -46,7 +43,6 @@ pwgen \
 mailutils \
 telnet
 
->>>>>>> 04af9dc (Completed Postfix Dovecot LDAP Roundcube automation)
 echo
 echo "[3/5] Enabling Services..."
 
@@ -82,8 +78,6 @@ echo
 echo "========================================"
 echo " Installation Complete"
 echo "========================================"
-<<<<<<< HEAD
-=======
 
 echo
 echo "Installed Components:"
@@ -93,4 +87,3 @@ echo " - Dovecot"
 echo " - Roundcube"
 echo " - Apache2"
 echo " - PHP"
->>>>>>> 04af9dc (Completed Postfix Dovecot LDAP Roundcube automation)
