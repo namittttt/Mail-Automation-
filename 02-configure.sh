@@ -104,7 +104,6 @@ BASEDN=$BASEDN
 ADMINDN=$ADMINDN
 
 LDAPPASS=$LDAPPASS
-<<<<<<< HEAD
 USER_OU=$USER_OU
 GROUP_OU=$GROUP_OU
 EOF
@@ -123,14 +122,12 @@ objectClass: organizationalUnit
 ou: $GROUP_OU
 
 ldapadd -x -D "$ADMINDN" -w "$LDAPPASS" -f /tmp/ou.ldif || true
-=======
 
 USER_OU=users
 GROUP_OU=groups
 EOF
 
 chmod 600 /opt/mailserver/mailserver.conf
->>>>>>> 04af9dc (Completed Postfix Dovecot LDAP Roundcube automation)
 
 echo
 echo "[5/6] Verifying LDAP Login..."
@@ -154,7 +151,6 @@ echo
 echo " LDAP Configuration Complete"
 
 echo
-<<<<<<< HEAD
 echo "[5/9] Configuring Dovecot LDAP..."
 
 cat > /etc/dovecot/dovecot-ldap.conf.ext <<EOF
@@ -239,7 +235,5 @@ echo "========================================"
 
 echo
 echo "Saved Configuration:"
-=======
 echo "Configuration File:"
->>>>>>> 04af9dc (Completed Postfix Dovecot LDAP Roundcube automation)
 echo "/opt/mailserver/mailserver.conf"
