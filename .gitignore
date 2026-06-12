@@ -1,0 +1,6 @@
+logs/
+backup/
+*.ldif
+*.bak
+mailserver.conf
+reference/
