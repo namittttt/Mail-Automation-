@@ -16,9 +16,7 @@ mkdir -p /var/mail/vhosts/$DOMAIN
 groupadd -f vmail
 
 id vmail >/dev/null 2>&1 || 
-useradd -r -g vmail 
--d /var/mail/vhosts 
--s /usr/sbin/nologin vmail
+useradd -r -g vmail -d /var/mail/vhosts -s /usr/sbin/nologin vmail
 
 chown -R vmail:vmail /var/mail/vhosts
 
@@ -52,32 +50,35 @@ EOF
 chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 
 echo
-echo "[3/7] Configuring Authentication..."
+echo "[3/7] Configuring LDAP PassDB..."
+
+cat > /etc/dovecot/conf.d/auth-ldap.conf.ext <<EOF
+passdb {
+driver = ldap
+args = /etc/dovecot/dovecot-ldap.conf.ext
+}
+
+userdb {
+driver = ldap
+args = /etc/dovecot/dovecot-ldap.conf.ext
+}
+EOF
+
+echo
+echo "[4/7] Enabling LDAP Authentication..."
+
+grep -q "auth-ldap.conf.ext" 
+/etc/dovecot/conf.d/10-auth.conf || 
+echo "!include auth-ldap.conf.ext" \
+
+> > /etc/dovecot/conf.d/10-auth.conf
 
 sed -i 
 's/^auth_mechanisms.*/auth_mechanisms = plain login/' 
 /etc/dovecot/conf.d/10-auth.conf || true
 
-grep -q "auth-ldap.conf.ext" 
-/etc/dovecot/conf.d/10-auth.conf || 
-echo '!include auth-ldap.conf.ext' \
-
-> > /etc/dovecot/conf.d/10-auth.conf
-
 echo
-echo "[4/7] Configuring Mail Storage..."
-
-grep -q "^mail_location" 
-/etc/dovecot/conf.d/10-mail.conf && 
-sed -i 
-'s|^mail_location.*|mail_location = maildir:~/Maildir|' 
-/etc/dovecot/conf.d/10-mail.conf || 
-echo "mail_location = maildir:~/Maildir" \
-
-> > /etc/dovecot/conf.d/10-mail.conf
-
-echo
-echo "[5/7] Configuring Authentication Socket..."
+echo "[5/7] Configuring Postfix Authentication Socket..."
 
 cat > /etc/dovecot/conf.d/99-auth-postfix.conf <<EOF
 service auth {
@@ -113,9 +114,7 @@ systemctl restart dovecot
 echo
 echo "Verifying Configuration..."
 
-doveconf -n >/dev/null
-
-echo "Dovecot Configuration Valid"
+doveconf -n
 
 echo
 echo "========================================"
