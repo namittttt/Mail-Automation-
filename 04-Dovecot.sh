@@ -4,7 +4,9 @@ set -e
 
 source /opt/mailserver/mailserver.conf
 
+echo "========================================"
 echo " Dovecot Configuration"
+echo "========================================"
 
 echo
 echo "[1/7] Creating Mail Storage..."
@@ -13,10 +15,10 @@ mkdir -p /var/mail/vhosts/$DOMAIN
 
 groupadd -f vmail
 
-id vmail >/dev/null 2>&1 || \
-useradd -r -g vmail \
--d /var/mail/vhosts \
--s /sbin/nologin vmail
+id vmail >/dev/null 2>&1 || 
+useradd -r -g vmail 
+-d /var/mail/vhosts 
+-s /usr/sbin/nologin vmail
 
 chown -R vmail:vmail /var/mail/vhosts
 
@@ -41,9 +43,9 @@ pass_filter = (mail=%u)
 
 user_filter = (mail=%u)
 
-user_attrs = \
-=home=/var/mail/vhosts/$DOMAIN/%n,\
-=uid=vmail,\
+user_attrs = 
+=home=/var/mail/vhosts/$DOMAIN/%n,
+=uid=vmail,
 =gid=vmail
 EOF
 
@@ -52,40 +54,38 @@ chmod 600 /etc/dovecot/dovecot-ldap.conf.ext
 echo
 echo "[3/7] Configuring Authentication..."
 
-cat > /etc/dovecot/conf.d/10-auth.conf <<EOF
-disable_plaintext_auth = no
+sed -i 
+'s/^auth_mechanisms.*/auth_mechanisms = plain login/' 
+/etc/dovecot/conf.d/10-auth.conf || true
 
-auth_mechanisms = plain login
+grep -q "auth-ldap.conf.ext" 
+/etc/dovecot/conf.d/10-auth.conf || 
+echo '!include auth-ldap.conf.ext' \
 
-!include auth-ldap.conf.ext
-EOF
+> > /etc/dovecot/conf.d/10-auth.conf
 
 echo
 echo "[4/7] Configuring Mail Storage..."
 
-cat > /etc/dovecot/conf.d/10-mail.conf <<EOF
-mail_location = maildir:~/Maildir
+grep -q "^mail_location" 
+/etc/dovecot/conf.d/10-mail.conf && 
+sed -i 
+'s|^mail_location.*|mail_location = maildir:~/Maildir|' 
+/etc/dovecot/conf.d/10-mail.conf || 
+echo "mail_location = maildir:~/Maildir" \
 
-namespace inbox {
- inbox = yes
-}
-EOF
+> > /etc/dovecot/conf.d/10-mail.conf
 
 echo
 echo "[5/7] Configuring Authentication Socket..."
 
-cat > /etc/dovecot/conf.d/10-master.conf <<EOF
+cat > /etc/dovecot/conf.d/99-auth-postfix.conf <<EOF
 service auth {
-
- unix_listener /var/spool/postfix/private/auth {
-   mode = 0660
-   user = postfix
-   group = postfix
- }
-
+unix_listener /var/spool/postfix/private/auth {
+mode = 0660
+user = postfix
+group = postfix
 }
-
-service auth-worker {
 }
 EOF
 
@@ -97,13 +97,11 @@ protocol lmtp {
 }
 
 service lmtp {
-
- unix_listener /var/spool/postfix/private/dovecot-lmtp {
-   mode = 0600
-   user = postfix
-   group = postfix
- }
-
+unix_listener /var/spool/postfix/private/dovecot-lmtp {
+mode = 0600
+user = postfix
+group = postfix
+}
 }
 EOF
 
@@ -120,5 +118,6 @@ doveconf -n >/dev/null
 echo "Dovecot Configuration Valid"
 
 echo
+echo "========================================"
 echo " Dovecot Configuration Complete"
-
+echo "========================================"
