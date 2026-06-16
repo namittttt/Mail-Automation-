@@ -1,25 +1,25 @@
 #!/bin/bash
-
 set -e
-
 echo "========================================"
 echo " Mail Server Installation"
 echo "========================================"
 
 if [ "$EUID" -ne 0 ]; then
-    echo "Please run as root"
-    exit 1
+echo "Please run as root"
+exit 1
 fi
 
 echo
-echo "[1/5] Updating Package Repository..."
+echo "[1/6] Updating Package Repository..."
 
 apt update
 
 echo
-echo "[2/5] Installing Required Packages..."
+echo "[2/6] Installing Required Packages..."
 
-DEBIAN_FRONTEND=noninteractive apt install -y \
+export DEBIAN_FRONTEND=noninteractive
+
+apt install -y \
 postfix \
 postfix-ldap \
 dovecot-core \
@@ -29,47 +29,59 @@ dovecot-lmtpd \
 dovecot-ldap \
 slapd \
 ldap-utils \
+apache2 \
 roundcube \
 roundcube-core \
-apache2 \
+roundcube-mysql \
+mariadb-server \
+mariadb-client \
 php \
 php-cli \
 php-common \
 php-ldap \
+php-mysql \
+php-imap \
 php-mbstring \
 php-intl \
-php-mysql \
+php-xml \
+php-curl \
+php-zip \
 pwgen \
 mailutils \
 telnet
 
 echo
-echo "[3/5] Enabling Services..."
+echo "[3/6] Enabling Services..."
 
 systemctl enable slapd
+systemctl enable mariadb
 systemctl enable postfix
-systemctl enable dovecot
 systemctl enable apache2
 
 echo
-echo "[4/5] Starting Services..."
+echo "[4/6] Starting Services..."
 
 systemctl restart slapd
+systemctl restart mariadb
 systemctl restart postfix
-systemctl restart dovecot
 systemctl restart apache2
 
 echo
-echo "[5/5] Verifying Services..."
+echo "[5/6] Creating Roundcube Database..."
+
+mysql -e "CREATE DATABASE IF NOT EXISTS roundcube;" || true
+
+echo
+echo "[6/6] Verifying Services..."
 
 echo -n "LDAP      : "
 systemctl is-active slapd
 
+echo -n "MariaDB   : "
+systemctl is-active mariadb
+
 echo -n "Postfix   : "
 systemctl is-active postfix
-
-echo -n "Dovecot   : "
-systemctl is-active dovecot
 
 echo -n "Apache2   : "
 systemctl is-active apache2
@@ -82,6 +94,7 @@ echo "========================================"
 echo
 echo "Installed Components:"
 echo " - OpenLDAP"
+echo " - MariaDB"
 echo " - Postfix"
 echo " - Dovecot"
 echo " - Roundcube"
