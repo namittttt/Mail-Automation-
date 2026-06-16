@@ -52,27 +52,100 @@ echo
 echo "[4/8] Configuring LDAP Authentication..."
 
 cat > /etc/dovecot/conf.d/auth-ldap.conf.ext <<EOL
-ldap_uris = ldap://127.0.0.1
+# Authentication for LDAP users. Included from auth.conf.
+#
+# <https://doc.dovecot.org/latest/core/config/auth/databases/ldap.html>
 
-ldap_auth_dn = $ADMINDN
-ldap_auth_dn_password = $LDAPPASS
+## See <https://doc.dovecot.org/latest/core/config/dict.html#ldap>
+ 
+ldap_uris = ldap://localhost
+ldap_auth_dn = cn=admin,dc=Namit,dc=com 
+ldap_auth_dn_password = Namit
+ldap_base = dc=Namit,dc=com
+ldap_starttls = no
 
-ldap_base = ou=users,$BASEDN
+#passdb ldap {
+ # passdb_use_worker = yes
+  #passdb_ldap_filter = (&(objectClass=mailUser)(mailDrop=%{user})(!(mailEnabled=FALSE)))
+  #ldap_bind = yes
+  #fields {
+  # user = %{ldap:mailDrop}
+  #}
+#}
 
 passdb ldap {
-  ldap_filter = (&(objectClass=posixAccount)(mail=%{user}))
-  ldap_bind = yes
-}
+ ldap_filter = (&(objectClass=posixAccount)(uid=%{user}))
+  ldap_bind = no
+  
+fields {
+     user=%{ldap:uid}
+     password=%{ldap:userPassword}
+     userdb_home=%{ldap:homeDirectory}
+     userdb_uid=%{ldap:uidNumber}
+     userdb_gid=%{ldap:gidNumber}
+       }
+           }
+#
+# "prefetch" user database means that the passdb already provided the
+# needed information and there's no need to do a separate userdb lookup.
+# <https://doc.dovecot.org/latest/core/config/auth/databases/prefetch.html>
+#userdb prefetch {
+#}
 
+#userdb ldap {
+ # ldap_filter = (&(objectClass=posixAccount)(mail=%{user}))
+
+# Default fields can be used to specify defaults that LDAP may override
+ # fields {
+  #  home=/home/virtual/%{user}
+ # }
+#}
+#userdb ldap {
+ # userdb_use_worker = yes
+  #userdb_ldap_filter = (&(objectClass=mailUser)(mailDrop=%{user})(!(mailEnabled=FALSE)))
+ # iterate_filter = (objectClass=mailUser)
+ # iterate_fields {
+   # user = %{ldap:mailDrop}
+ # }
+  #fields {
+   # user = %{ldap:mailDrop}
+   # home = %{ldap:mailHomeDirectory}
+   # uid = %{ldap:mailUidNumber}
+   # gid = %{ldap:mailGidNumber}
+   # quota_storage_size = %{ldap:mailQuota}
+  #  acl_groups = %{ldap:mailGroupACL | default ('')}
+ #   }
+#}
 userdb ldap {
   fields {
     home = %{ldap:homeDirectory}
-    uid = vmail
-    gid = vmail
+    uid = %{ldap:uidNumber}
+    gid = %{ldap:gidNumber}
   }
-
-  ldap_filter = (&(objectClass=posixAccount)(mail=%{user}))
+  filter = (&(objectClass=posixAccount)(uid=%{user}))
 }
+
+# If you don't have any user-specific settings, you can avoid the userdb LDAP
+# lookup by using userdb static instead of userdb ldap, for example:
+# <https://doc.dovecot.org/latest/core/config/auth/databases/static.html>
+#userdb static {
+  #fields {
+   # uid = vmail
+    #gid = vmail
+    #home = /var/vmail/%{user}
+ # }
+#}
+
+# Authentication for LDAP users. Included from auth.conf.
+#
+# See: https://doc.dovecot.org/latest/core/config/auth/databases/ldap.html
+#service auth-worker {
+  # unix_listener auth-worker
+ # {
+  # user = doveauth
+ # }
+ # user = doveauth
+#}
 EOL
 
 chmod 600 /etc/dovecot/conf.d/auth-ldap.conf.ext
