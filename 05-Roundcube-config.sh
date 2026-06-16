@@ -16,11 +16,11 @@ fi
 echo
 echo "[1/5] Configuring Roundcube IMAP..."
 
-sed -i "/default_host/c\\\$config['default_host'] = 'localhost';" \
-/etc/roundcube/config.inc.php || true
+#sed -i "/default_host/c\\\$config['default_host'] = 'localhost';" \
+#/etc/roundcube/config.inc.php || true
 
-grep -q "default_host" /etc/roundcube/config.inc.php || \
-echo "\$config['default_host'] = 'localhost';" \
+grep -q "imap_host" /etc/roundcube/config.inc.php || \
+echo "\$config['imap_host'] = 'localhost';" \
 >> /etc/roundcube/config.inc.php
 
 echo
@@ -33,9 +33,9 @@ grep -q "smtp_host" /etc/roundcube/config.inc.php || \
 echo "\$config['smtp_host'] = 'localhost';" \
 >> /etc/roundcube/config.inc.php
 
-grep -q "smtp_port" /etc/roundcube/config.inc.php || \
-echo "\$config['smtp_port'] = 25;" \
->> /etc/roundcube/config.inc.php
+#grep -q "smtp_port" /etc/roundcube/config.inc.php || \
+#echo "\$config['smtp_port'] = 25;" \
+#>> /etc/roundcube/config.inc.php
 
 echo
 echo "[3/5] Setting Product Name..."
